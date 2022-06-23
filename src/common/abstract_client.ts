@@ -8,6 +8,7 @@ import { Response } from "node-fetch"
 export type ResponseCallback<TReuslt = any> = (error: string, rep: TReuslt) => void
 export interface RequestOptions extends Pick<ClientProfile["httpProfile"], "headers"> {
   multipart?: boolean
+  abortSignal?: AbortSignal
 }
 
 interface RequestData {
@@ -140,6 +141,7 @@ export class AbstractClient {
         data: params,
         timeout: this.profile.httpProfile.reqTimeout * 1000,
         headers: Object.assign({}, this.profile.httpProfile.headers, options.headers),
+        signal: options.abortSignal,
       })
     } catch (error) {
       throw new TencentCloudSDKHttpException(error.message)
@@ -173,6 +175,7 @@ export class AbstractClient {
         requestClient: this.sdkVersion,
         language: this.profile.language,
         headers: Object.assign({}, this.profile.httpProfile.headers, options.headers),
+        signal: options.abortSignal,
       })
     } catch (e) {
       throw new TencentCloudSDKHttpException(e.message)

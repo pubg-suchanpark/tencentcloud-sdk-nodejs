@@ -5,7 +5,9 @@ import * as getStream from "get-stream"
 import * as FormData from "form-data"
 import Sign from "../sign"
 import fetch from "./fetch"
-import { Response } from "node-fetch"
+import { Response, RequestInit } from "node-fetch"
+
+type NodeFetchAbortSignal = RequestInit['signal'];
 
 /**
  * @inner
@@ -17,12 +19,14 @@ export class HttpConnection {
     data,
     timeout,
     headers = {},
+    signal,
   }: {
     method: string
     url: string
     data: any
     timeout: number
     headers?: Record<string, string>
+    signal?: AbortSignal
   }): Promise<Response> {
     const config: {
       method: string
@@ -31,10 +35,12 @@ export class HttpConnection {
         [key: string]: string
       }
       body?: string
+      signal?: NodeFetchAbortSignal
     } = {
       method: method,
       headers: Object.assign({}, headers),
       timeout,
+      signal: signal as unknown as NodeFetchAbortSignal,
     }
     if (method === "GET") {
       url += "?" + QueryString.stringify(data)
@@ -61,6 +67,7 @@ export class HttpConnection {
     requestClient,
     language,
     headers = {},
+    signal,
   }: {
     method: string
     url: string
@@ -77,6 +84,7 @@ export class HttpConnection {
     requestClient: string
     language: string
     headers?: Record<string, string>
+    signal?: AbortSignal
   }): Promise<Response> {
     // data 中可能带有 readStream，由于需要计算整个 body 的 hash，
     // 所以这里把 readStream 转为 Buffer
@@ -105,6 +113,7 @@ export class HttpConnection {
         [key: string]: any
       }
       body?: any
+      signal?: NodeFetchAbortSignal
     } = {
       method,
       timeout,
@@ -117,6 +126,7 @@ export class HttpConnection {
         "X-TC-Token": token,
         "X-TC-RequestClient": requestClient,
       }),
+      signal: signal as unknown as NodeFetchAbortSignal,
     }
 
     if (token === null) {
